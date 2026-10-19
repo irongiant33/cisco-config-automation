@@ -12,6 +12,9 @@ Edit `inventory.yml`, `group_vars/cyber-vision-switches/main.yml`, and `host_var
 Add `--ask-vault-pass` to each command below.
 
 ## Usage
+
+Pre-requisite for running the below commands is that each device in the `inventory.yml` is reachable over IP and each device has a SSH password stored in the `vault.yml` file.
+
 ```bash
 ansible-playbook cyber-vision-playbooks/config.yml --check --diff --ask-vault-pass  # dry run
 ansible-playbook cyber-vision-playbooks/config.yml --ask-vault-pass                 # apply
