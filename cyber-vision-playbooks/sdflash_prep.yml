@@ -1,9 +1,9 @@
 ---
 # ONE-TIME, DESTRUCTIVE: formats sdflash: (ext4) and partitions it for IOx.
 # These are exec commands, not config, so they are not in the template.
-# Run: ansible-playbook playbooks/sdflash_prep.yml -e confirm_format=true
+# Run: ansible-playbook cyber-vision-playbooks/sdflash_prep.yml -e confirm_format=true
 - name: Prepare sdflash for IOx (Cyber Vision)
-  hosts: switches
+  hosts: cyber-vision-switches
   gather_facts: false
   serial: 1
   tasks:

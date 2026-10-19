@@ -1,6 +1,6 @@
 files/images/*
 !files/images/.gitkeep
-group_vars/switches/vault.yml
+group_vars/cyber-vision-switches/vault.yml
 .vault_pass
 *.retry
 venv/

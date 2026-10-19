@@ -5,18 +5,18 @@
 python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 ansible-galaxy collection install -r requirements.yml
-cp group_vars/switches/vault.yml.example group_vars/switches/vault.yml
-ansible-vault encrypt group_vars/switches/vault.yml
+cp group_vars/cyber-vision-switches/vault.yml.example group_vars/cyber-vision-switches/vault.yml
+ansible-vault encrypt group_vars/cyber-vision-switches/vault.yml
 ```
-Edit `inventory.yml`, `group_vars/switches/main.yml`, and `host_vars/*.yml`.
+Edit `inventory.yml`, `group_vars/cyber-vision-switches/main.yml`, and `host_vars/*.yml`.
 Add `--ask-vault-pass` to each command below.
 
 ## Usage
 ```bash
-ansible-playbook playbooks/config.yml --check --diff   # dry run
-ansible-playbook playbooks/config.yml                  # apply
-ansible-playbook playbooks/upgrade.yml                 # upgrade, one switch at a time
-ansible-playbook playbooks/sdflash_prep.yml -e confirm_format=true   # one-time, destructive
+ansible-playbook cyber-vision-playbooks/config.yml --check --diff --ask-vault-pass  # dry run
+ansible-playbook cyber-vision-playbooks/config.yml --ask-vault-pass                 # apply
+ansible-playbook cyber-vision-playbooks/upgrade.yml --ask-vault-pass                # upgrade, one switch at a time
+ansible-playbook cyber-vision-playbooks/sdflash_prep.yml -e confirm_format=true --ask-vault-pass  # one-time, destructive
 ```
 
 ## Notes

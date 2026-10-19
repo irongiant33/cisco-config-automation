@@ -1,9 +1,9 @@
 ---
 # Upgrade IOS-XE one switch at a time (install mode).
-# Put the image in files/images/ and set image_file in group_vars/switches/main.yml.
-# Run: ansible-playbook playbooks/upgrade.yml
+# Put the image in files/images/ and set image_file in group_vars/cyber-vision-switches/main.yml.
+# Run: ansible-playbook cyber-vision-playbooks/upgrade.yml
 - name: Upgrade IOS-XE software
-  hosts: switches
+  hosts: cyber-vision-switches
   gather_facts: false
   serial: 1
   tasks:

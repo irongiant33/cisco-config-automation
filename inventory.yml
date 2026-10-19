@@ -1,9 +1,9 @@
 ---
 all:
   children:
-    switches:
+    cyber-vision-switches:
       hosts:
-        cvsw-01:
-          ansible_host: 192.168.100.24   # TODO: current reachable mgmt IP
-        # cvsw-02:
-        #  ansible_host: 192.0.2.12   # TODO
+        CVSW-03:
+          ansible_host: 192.168.100.24
+        CVSW-04:
+          ansible_host: 192.168.100.28  

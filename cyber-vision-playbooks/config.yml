@@ -1,8 +1,8 @@
 ---
-# Dry run: ansible-playbook playbooks/config.yml --check --diff
-# Apply:   ansible-playbook playbooks/config.yml
+# Dry run: ansible-playbook cyber-vision-playbooks/config.yml --check --diff
+# Apply:   ansible-playbook cyber-vision-playbooks/config.yml
 - name: Apply desired configuration to switches
-  hosts: switches
+  hosts: cyber-vision-switches
   gather_facts: false
   tasks:
     - name: Ensure admin user exists (password only set on creation, keeps idempotent)
@@ -35,7 +35,7 @@
 
     - name: Push templated configuration
       cisco.ios.ios_config:
-        src: ../templates/switch.j2
+        src: ../cyber-vision-templates/switch.j2
         save_when: modified
       register: cfg
 
