@@ -1,0 +1,116 @@
+---
+# Upgrade IOS-XE one switch at a time (install mode).
+# Put the image in files/images/ and set image_file in group_vars/switches/main.yml.
+# Run: ansible-playbook playbooks/upgrade.yml
+- name: Upgrade IOS-XE software
+  hosts: switches
+  gather_facts: false
+  serial: 1
+  tasks:
+    - name: Gather facts
+      cisco.ios.ios_facts:
+        gather_subset: min
+
+    - name: Report current version
+      ansible.builtin.debug:
+        msg: "{{ inventory_hostname }} running {{ ansible_net_version }}, target {{ target_version }}"
+
+    - name: Upgrade block
+      when: ansible_net_version is version(target_version, '!=', strict=false)
+      block:
+        - name: Compute local image MD5
+          ansible.builtin.stat:
+            path: "{{ image_src }}"
+            checksum_algorithm: md5
+          delegate_to: localhost
+          register: local_img
+
+        - name: Fail if image missing
+          ansible.builtin.assert:
+            that: local_img.stat.exists
+            fail_msg: "Image not found at {{ image_src }}"
+
+        - name: Enable SCP server on switch
+          cisco.ios.ios_config:
+            lines: ip scp server enable
+
+        - name: Check whether image already on flash
+          cisco.ios.ios_command:
+            commands: "dir flash:{{ image_file }}"
+          register: dir_out
+          failed_when: false
+
+        - name: Copy image to flash via SCP from control host
+          ansible.netcommon.net_put:
+            src: "{{ image_src }}"
+            dest: "flash:{{ image_file }}"
+            protocol: scp
+          when: "'No such file' in dir_out.stdout[0] or 'Error' in dir_out.stdout[0]"
+          vars:
+            ansible_command_timeout: 3600
+
+        - name: Verify MD5 on switch
+          cisco.ios.ios_command:
+            commands: "verify /md5 flash:{{ image_file }}"
+          register: md5_out
+          vars:
+            ansible_command_timeout: 1800
+          failed_when: local_img.stat.checksum not in md5_out.stdout[0]
+
+        - name: Save running config
+          cisco.ios.ios_command:
+            commands: copy running-config startup-config
+          vars:
+            ansible_command_timeout: 300
+
+        - name: Install image (switch will reload)
+          cisco.ios.ios_command:
+            commands:
+              - command: "install add file flash:{{ image_file }} activate commit"
+                prompt: "\\[y/n\\]"
+                answer: "y"
+          vars:
+            ansible_command_timeout: 3600
+          failed_when: false   # connection drops during reload
+          async: 3600
+          poll: 0
+
+        - name: Wait for switch to go down
+          ansible.builtin.wait_for:
+            host: "{{ ansible_host }}"
+            port: 22
+            state: stopped
+            timeout: 300
+          delegate_to: localhost
+
+        - name: Wait for switch to come back
+          ansible.builtin.wait_for:
+            host: "{{ ansible_host }}"
+            port: 22
+            state: started
+            delay: 60
+            timeout: 1800
+          delegate_to: localhost
+
+        - ansible.builtin.meta: reset_connection
+
+        - name: Re-gather facts
+          cisco.ios.ios_facts:
+            gather_subset: min
+          register: post
+          retries: 10
+          delay: 30
+          until: post is succeeded
+
+        - name: Verify new version
+          ansible.builtin.assert:
+            that: ansible_net_version is version(target_version, '==', strict=false)
+            fail_msg: "{{ inventory_hostname }} is on {{ ansible_net_version }}, expected {{ target_version }}"
+
+        - name: Remove inactive packages
+          cisco.ios.ios_command:
+            commands:
+              - command: install remove inactive
+                prompt: "\\[y/n\\]"
+                answer: "y"
+          failed_when: false

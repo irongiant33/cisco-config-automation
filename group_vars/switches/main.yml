@@ -1,0 +1,26 @@
+---
+# Connection
+ansible_connection: ansible.netcommon.network_cli
+ansible_network_os: cisco.ios.ios
+ansible_user: admin
+ansible_password: "{{ vault_admin_password }}"
+ansible_become: true
+ansible_become_method: enable
+ansible_become_password: "{{ vault_enable_password | default(vault_admin_password) }}"
+
+# Shared desired-state values (override per host in host_vars if needed)
+domain_name: cisco.com
+admin_user: admin
+admin_password: "{{ vault_admin_password }}"
+mgmt_vlan: 430            # Management VLAN for the switch
+cv_vlan: 2508              # Cyber Visions internal erspan VLAN
+ntp_server: 129.6.15.28
+dns_server: 10.110.56.59        # Primary DNS server
+dns_server_alt: 10.110.173.16   # Alternate DNS server; leave empty to omit
+erspan_destination: 169.254.1.2
+ssh_key_modulus: 2048     # RSA key size generated for SSH
+
+# Software upgrade
+target_version: "17.18.03"
+image_file: cat9k_iosxe.17.18.03.SPA.bin   # TODO: exact filename
+image_src: "{{ playbook_dir }}/../files/images/{{ image_file }}"

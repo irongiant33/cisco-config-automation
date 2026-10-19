@@ -1,0 +1,6 @@
+files/images/*
+!files/images/.gitkeep
+group_vars/switches/vault.yml
+.vault_pass
+*.retry
+venv/

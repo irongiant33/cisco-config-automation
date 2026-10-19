@@ -1,0 +1,38 @@
+---
+# ONE-TIME, DESTRUCTIVE: formats sdflash: (ext4) and partitions it for IOx.
+# These are exec commands, not config, so they are not in the template.
+# Run: ansible-playbook playbooks/sdflash_prep.yml -e confirm_format=true
+- name: Prepare sdflash for IOx (Cyber Vision)
+  hosts: switches
+  gather_facts: false
+  serial: 1
+  tasks:
+    - name: Require explicit confirmation
+      ansible.builtin.assert:
+        that: confirm_format | default(false) | bool
+        fail_msg: "This erases sdflash:. Re-run with -e confirm_format=true"
+
+    - name: Format sdflash as ext4
+      cisco.ios.ios_command:
+        commands:
+          - command: "format sdflash: ext4"
+            prompt: "\\[confirm\\]"
+            answer: "\r"
+          - command: "\r"
+            prompt: "\\[confirm\\]"
+            answer: "\r"
+      vars:
+        ansible_command_timeout: 900
+      failed_when: false   # review output; prompts vary by release
+
+    - name: Partition sdflash for iox
+      cisco.ios.ios_command:
+        commands:
+          - command: "partition sdflash: iox"
+            prompt: "\\[confirm\\]"
+            answer: "\r"
+      failed_when: false
+      register: part
+
+    - ansible.builtin.debug:
+        var: part.stdout_lines

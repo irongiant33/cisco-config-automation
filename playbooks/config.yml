@@ -1,0 +1,45 @@
+---
+# Dry run: ansible-playbook playbooks/config.yml --check --diff
+# Apply:   ansible-playbook playbooks/config.yml
+- name: Apply desired configuration to switches
+  hosts: switches
+  gather_facts: false
+  tasks:
+    - name: Ensure admin user exists (password only set on creation, keeps idempotent)
+      cisco.ios.ios_user:
+        name: "{{ admin_user }}"
+        privilege: 15
+        configured_password: "{{ admin_password }}"
+        update_password: on_create
+        state: present
+      no_log: true
+
+    - name: Set hostname and domain (required before RSA key generation)
+      cisco.ios.ios_config:
+        lines:
+          - "hostname CVSW-{{ switch_suffix }}"
+          - "ip domain name {{ domain_name }}"
+
+    - name: Check for existing RSA key
+      cisco.ios.ios_command:
+        commands: show crypto key mypubkey rsa
+      register: rsa_keys
+      changed_when: false
+
+    - name: Generate RSA key for SSH (only if none exists)
+      cisco.ios.ios_command:
+        commands: "crypto key generate rsa modulus {{ ssh_key_modulus }}"
+      vars:
+        ansible_command_timeout: 300
+      when: "'Key name' not in rsa_keys.stdout[0]"
+
+    - name: Push templated configuration
+      cisco.ios.ios_config:
+        src: ../templates/switch.j2
+        save_when: modified
+      register: cfg
+
+    - name: Show commands sent
+      ansible.builtin.debug:
+        var: cfg.updates
+      when: cfg.updates is defined

@@ -1,0 +1,37 @@
+hostname CVSW-{{ switch_suffix }}
+ip domain name {{ domain_name }}
+ip name-server {{ dns_server }}{{ (' ' ~ dns_server_alt) if dns_server_alt else '' }}
+vtp mode off
+vlan {{ mgmt_vlan }}
+ name NETWORK_MGMT
+vlan {{ cv_vlan }}
+ name CYBER-VISION
+ remote-span
+{% for port in access_ports %}
+interface {{ port }}
+ switchport mode access
+ switchport access vlan {{ mgmt_vlan }}
+{% endfor %}
+interface AppGigabitEthernet1/1
+ switchport mode trunk
+ no shutdown
+interface Vlan{{ mgmt_vlan }}
+ ip address {{ mgmt_ip }} {{ mgmt_mask }}
+ no shutdown
+iox
+ip default-gateway {{ default_gateway }}
+ip http authentication aaa
+ip http secure-server
+ip http server
+monitor session 1 source interface {{ monitor_sources | join(', ') }}
+monitor session 1 destination remote vlan {{ cv_vlan }}
+monitor session 1 destination format-erspan {{ erspan_destination }}
+ntp server {{ ntp_server }}
+aaa new-model
+aaa authentication login default local
+aaa authorization exec default local if-authenticated
+ip ssh version 2
+line vty 0 4
+ transport input ssh
+line vty 5 15
+ transport input ssh
