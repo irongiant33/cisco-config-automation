@@ -2,8 +2,8 @@
 switch_suffix: "04"
 access_ports:
   - GigabitEthernet1/3
-mgmt_ip: 192.0.2.12
-mgmt_mask: 255.255.255.0
-default_gateway: 192.0.2.1
+mgmt_ip: 10.40.13.206
+mgmt_mask: 255.255.254.0
+default_gateway: 10.40.12.1
 monitor_sources:
   - GigabitEthernet1/4 - 10

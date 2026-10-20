@@ -12,9 +12,11 @@ ansible_become_password: "{{ vault_enable_password | default(vault_admin_passwor
 domain_name: cisco.com
 admin_user: admin
 admin_password: "{{ vault_admin_password }}"
-mgmt_vlan: 430            # Management VLAN for the switch
+mgmt_vlan: 12            # Management VLAN for the switch
+rspan_vlan: 999           # remote span VLAN
+blackhole_vlan: 666       # making sure native vlan is unused
 cv_vlan: 2508              # Cyber Visions internal erspan VLAN
-ntp_server: 129.6.15.28
+ntp_server: 30.208.249.133
 dns_server: 10.110.56.59        # Primary DNS server
 dns_server_alt: 10.110.173.16   # Alternate DNS server; leave empty to omit
 erspan_destination: 169.254.1.2

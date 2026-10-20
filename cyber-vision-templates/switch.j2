@@ -1,7 +1,12 @@
 hostname CVSW-{{ switch_suffix }}
+no ip domain lookup
 ip domain name {{ domain_name }}
-ip name-server {{ dns_server }}{{ (' ' ~ dns_server_alt) if dns_server_alt else '' }}
 vtp mode off
+interface Vlan1
+ no ip address
+ shutdown
+vlan {{ blackhole_vlan }}
+ name Blackhole
 vlan {{ mgmt_vlan }}
  name NETWORK_MGMT
 vlan {{ cv_vlan }}
@@ -9,8 +14,9 @@ vlan {{ cv_vlan }}
  remote-span
 {% for port in access_ports %}
 interface {{ port }}
- switchport mode access
- switchport access vlan {{ mgmt_vlan }}
+ switchport mode trunk
+ switchport trunk allowed vlan {{ mgmt_vlan }},{{ rspan_vlan }}
+ switchport trunk native vlan {{ blackhole_vlan }}
 {% endfor %}
 interface AppGigabitEthernet1/1
  switchport mode trunk
@@ -20,10 +26,10 @@ interface Vlan{{ mgmt_vlan }}
  no shutdown
 iox
 ip default-gateway {{ default_gateway }}
-ip http authentication aaa
+ip http authentication local
 ip http secure-server
 ip http server
-monitor session 1 source interface {{ monitor_sources | join(', ') }}
+monitor session 1 source vlan {{ rspan_vlan }} rx
 monitor session 1 destination remote vlan {{ cv_vlan }}
 monitor session 1 destination format-erspan {{ erspan_destination }}
 ntp server {{ ntp_server }}
@@ -35,3 +41,4 @@ line vty 0 4
  transport input ssh
 line vty 5 15
  transport input ssh
+license boot level network-advantage
