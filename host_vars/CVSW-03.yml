@@ -1,7 +1,7 @@
 ---
 switch_suffix: "03"                 # Hostname CVSW-XX
 access_ports:                       # Management Access Port
-  - GigabitEthernet1/3
+  - GigabitEthernet1/2
 mgmt_ip: 10.40.13.204                 # Management IP
 mgmt_mask: 255.255.254.0            
 default_gateway: 10.40.12.1          
