@@ -32,6 +32,13 @@ ansible-playbook cyber-vision-playbooks/sdflash_prep.yml -e confirm_format=true 
 - Typical order: sdflash_prep -> upgrade -> config.
 - To add routers later, create a `routers` group with its own vars/template.
 
+## RSPAN Configuration
+
+- Make sure you have a VLAN created just for the RSPAN `vlan 999; name cybervision; remote-span`
+- initialize the RSPAN in that vlan `(config-vlan)# remote-span`
+- Create the monitor sources. I prefer to use interfaces that are not used for trunks `monitor session 1 rsource interface g1/2 - 20`
+- Create the monitor destination `monitor session 1 destination remote vlan 999`
+
 ## RSPAN Utilization Checks
 
 `show interfaces <interface-id> | include line protocol|input rate|output rate`
