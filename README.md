@@ -31,3 +31,16 @@ ansible-playbook cyber-vision-playbooks/sdflash_prep.yml -e confirm_format=true 
 - Upgrade pushes the image via SCP (`ip scp server enable` is applied automatically).
 - Typical order: sdflash_prep -> upgrade -> config.
 - To add routers later, create a `routers` group with its own vars/template.
+
+## RSPAN Utilization Checks
+
+`show interfaces <interface-id> | include line protocol|input rate|output rate`
+ - ensure 5 minute output rate does not consistently exceed 70-80% of the port's total capacity
+
+`show interfaces <interface-id> counters errors`
+- If the drop counter is actively incrementing, your RSPAN traffic is saturating the port.
+- `clear counters <interface-id>` and try again to reassess
+
+To mitigate traffic:
+- Filter the Traffic: Instead of monitoring all traffic, use a VACL (VLAN Access Control List) to filter out heavy, irrelevant protocols (like backup traffic, storage traffic, or video streaming) before it enters the RSPAN VLAN.
+- Restrict the Direction: Monitor only rx (receive) or tx (transmit) traffic on the source ports rather than both, effectively cutting the potential mirrored bandwidth in half.
